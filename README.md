@@ -16,7 +16,7 @@ A complete system for detecting the closest speaker to a microphone by analyzing
 - [File Descriptions](#-file-descriptions)
 - [License](#-license)
 - [Contributing](#-contributing)
-- [Live Demo](#-live-demo)
+
 
 ---
 
