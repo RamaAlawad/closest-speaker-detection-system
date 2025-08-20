@@ -1,4 +1,4 @@
-🎤 Closest Speaker Detection System
+  # ***🎤 Closest Speaker Detection System*** #
 This project is a complete system for detecting the closest speaker to a microphone by analyzing audio intensity and voice activity from multiple audio sources. It consists of a Python-based WebSocket server and a a web-based client interface.
 
 🚀 Features
