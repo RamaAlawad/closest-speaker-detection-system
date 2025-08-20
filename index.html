@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Closest Speaker Detection System</title>
+    <style>
+        /* ===== GLOBAL STYLES ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        
+        /* ===== HEADER STYLES ===== */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            font-size: 1.1em;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+        
+        /* ===== CONTROL PANEL STYLES ===== */
+        .control-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .control-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            border-left: 4px solid #4ecdc4;
+        }
+        
+        .section-title {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a6f);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 14px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px 0 rgba(255, 107, 107, 0.3);
+            font-weight: 600;
+        }
+        
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px 0 rgba(255, 107, 107, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background: linear-gradient(45deg, #666, #555);
+            cursor: not-allowed;
+            transform: none;
+            opacity: 0.6;
+        }
+        
+        button.success {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+        }
+        
+        button.danger {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a6f);
+        }
+        
+        button.primary {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+        }
+        
+        /* ===== STATUS INDICATORS ===== */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .status-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border-left: 3px solid #4ecdc4;
+        }
+        
+        .status-item.connected {
+            border-left-color: #4ecdc4;
+        }
+        
+        .status-item.disconnected {
+            border-left-color: #ff6b6b;
+        }
+        
+        .status-item.recording {
+            border-left-color: #ffa726;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .status-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+        
+        .status-value {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        
+        /* ===== AUDIO CONTROLS ===== */
+        .audio-section {
+            margin-bottom: 20px;
+        }
+        
+        .volume-meter {
+            width: 100%;
+            height: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 10px 0;
+            position: relative;
+        }
+        
+        .volume-level {
+            height: 100%;
+            background: linear-gradient(90deg, #4ecdc4, #ffa726, #ff6b6b);
+            border-radius: 8px;
+            transition: width 0.1s ease;
+            min-width: 2px;
+        }
+        
+        .volume-text {
+            text-align: center;
+            font-size: 0.9em;
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+        
+        /* ===== SPEAKER DISPLAY ===== */
+        .speakers-section {
+            margin-bottom: 30px;
+        }
+        
+        .speakers-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .speakers-title {
+            font-size: 1.5em;
+            color: #4ecdc4;
+        }
+        
+        .speakers-count {
+            background: rgba(78, 205, 196, 0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+        }
+        
+        .speaker-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+        
+        .speaker-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid #45b7d1;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .speaker-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        
+        .speaker-card.closest {
+            border-left-color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.2);
+            animation: glow 2s infinite alternate;
+        }
+        
+        @keyframes glow {
+            from { box-shadow: 0 0 20px rgba(78, 205, 196, 0.3); }
+            to { box-shadow: 0 0 30px rgba(78, 205, 196, 0.6); }
+        }
+        
+        .speaker-card.speaking {
+            border-left-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.2);
+        }
+        
+        .speaker-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .speaker-id {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #4ecdc4;
+        }
+        
+        .speaker-badges {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .badge.closest {
+            background: #4ecdc4;
+            color: white;
+        }
+        
+        .badge.speaking {
+            background: #ff6b6b;
+            color: white;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.5; }
+        }
+        
+        .speaker-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 0.8em;
+            opacity: 0.7;
+            margin-bottom: 3px;
+        }
+        
+        .stat-value {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        
+        .intensity-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+            position: relative;
+        }
+        
+        .intensity-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4ecdc4, #ffa726, #ff6b6b);
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+        
+        .intensity-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.8em;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+        }
+        
+        .transcription {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            font-style: italic;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        
+        .transcription.empty {
+            opacity: 0.5;
+        }
+        
+        /* ===== LOG SECTION ===== */
+        .log-section {
+            margin-top: 30px;
+        }
+        
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .log {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .log::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .log::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        
+        .log::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-radius: 3px;
+        }
+        
+        .log-entry.info {
+            color: #e1f5fe;
+        }
+        
+        .log-entry.success {
+            color: #4ecdc4;
+            background: rgba(78, 205, 196, 0.1);
+        }
+        
+        .log-entry.error {
+            color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.1);
+        }
+        
+        .log-entry.warning {
+            color: #ffa726;
+            background: rgba(255, 167, 38, 0.1);
+        }
+        
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            .control-panel {
+                grid-template-columns: 1fr;
+            }
+            
+            .speaker-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                justify-content: stretch;
+            }
+            
+            button {
+                flex: 1;
+                min-width: 120px;
+            }
+            
+            .status-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .speaker-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .speakers-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .speaker-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+        
+        /* ===== LOADING ANIMATIONS ===== */
+        .loading {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #4ecdc4;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* ===== UTILITY CLASSES ===== */
+        .hidden {
+            display: none !important;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .text-small {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        
+        .mb-10 {
+            margin-bottom: 10px;
+        }
+        
+        .mb-20 {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>🎤 Closest Speaker Detection</h1>
+            <p class="subtitle">Real-time voice activity detection and speaker proximity analysis</p>
+        </div>
+
+        <!-- Control Panel -->
+        <div class="control-panel">
+            <!-- Connection Controls -->
+            <div class="control-section">
+                <div class="section-title">🔌 Connection</div>
+                <div class="controls">
+                    <button id="connectBtn" class="primary">Connect Server</button>
+                    <button id="getStatusBtn" class="primary" disabled>Refresh Status</button>
+                    <button id="getStatsBtn" class="primary" disabled>Statistics</button>
+                </div>
+                
+                <!-- Connection Status -->
+                <div class="status-grid">
+                    <div class="status-item" id="connectionStatus">
+                        <div class="status-label">Connection</div>
+                        <div class="status-value">Disconnected</div>
+                    </div>
+                    <div class="status-item" id="serverInfo">
+                        <div class="status-label">Server Info</div>
+                        <div class="status-value">N/A</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Audio Controls -->
+            <div class="control-section">
+                <div class="section-title">🎙️ Audio</div>
+                <div class="controls">
+                    <button id="startAudioBtn" class="success" disabled>Start Recording</button>
+                    <button id="stopAudioBtn" class="danger" disabled>Stop Recording</button>
+                </div>
+                
+                <!-- Audio Status -->
+                <div class="status-grid">
+                    <div class="status-item" id="audioStatus">
+                        <div class="status-label">Recording</div>
+                        <div class="status-value">Inactive</div>
+                    </div>
+                    <div class="status-item" id="microphoneStatus">
+                        <div class="status-label">Microphone</div>
+                        <div class="status-value">Not Accessed</div>
+                    </div>
+                </div>
+                
+                <!-- Volume Meter -->
+                <div class="audio-section">
+                    <div class="section-title text-small">Local Audio Level</div>
+                    <div class="volume-meter">
+                        <div class="volume-level" id="volumeLevel"></div>
+                    </div>
+                    <div class="volume-text" id="volumeText">0 dB</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Speakers Section -->
+        <div class="speakers-section">
+            <div class="speakers-header">
+                <h2 class="speakers-title">👥 Active Speakers</h2>
+                <div class="speakers-count" id="speakersCount">0 speakers</div>
+            </div>
+            
+            <div class="speaker-grid" id="speakerGrid">
+                <!-- Default message when no speakers -->
+                <div class="speaker-card" id="noSpeakersMessage">
+                    <div class="text-center">
+                        <div class="speaker-id">No Active Speakers</div>
+                        <p class="text-small">Connect to the server and start recording to see speakers appear here.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Log Section -->
+        <div class="log-section">
+            <div class="log-header">
+                <h3>📋 System Log</h3>
+                <button id="clearLogBtn" class="primary" style="padding: 5px 15px; font-size: 12px;">Clear Log</button>
+            </div>
+            <div class="log" id="logContainer">
+                <div class="log-entry info">[System] Client initialized and ready</div>
+                <div class="log-entry info">[System] Click 'Connect Server' to begin</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Closest Speaker Detection Client
+         * ================================
+         * 
+         * This client connects to the WebSocket server and provides real-time
+         * speaker detection capabilities with audio streaming and visualization.
+         * 
+         * Features:
+         * - WebSocket communication with server
+         * - Real-time audio capture and streaming
+         * - Visual speaker display with intensity meters
+         * - Comprehensive logging and error handling
+         * - Responsive design for mobile devices
+         */
+        
+        class SpeakerDetectionClient {
+            constructor() {
+                // Connection properties
+                this.ws = null;
+                this.isConnected = false;
+                this.clientId = null;
+                this.reconnectAttempts = 0;
+                this.maxReconnectAttempts = 5;
+                
+                // Audio properties
+                this.mediaStream = null;
+                this.audioContext = null;
+                this.microphone = null;
+                this.processor = null;
+                this.isRecording = false;
+                this.audioChunkSize = 4096;
+                
+                // Server configuration
+                this.serverUrl = 'ws://localhost:8765';
+                this.heartbeatInterval = null;
+                this.statusUpdateInterval = null;
+                
+                // UI state
+                this.lastVolumeUpdate = 0;
+                this.speakers = new Map();
+                
+                // Initialize the client
+                this.initializeElements();
+                this.bindEvents();
+                this.log('Client initialized successfully', 'success');
+                
+                // Auto-connect if server is likely running
+                setTimeout(() => this.checkAutoConnect(), 1000);
+            }
+            
+            /**
+             * Initialize DOM elements and store references
+             */
+            initializeElements() {
+                // Connection elements
+                this.connectBtn = document.getElementById('connectBtn');
+                this.getStatusBtn = document.getElementById('getStatusBtn');
+                this.getStatsBtn = document.getElementById('getStatsBtn');
+                this.connectionStatus = document.getElementById('connectionStatus');
+                this.serverInfo = document.getElementById('serverInfo');
+                
+                // Audio elements
+                this.startAudioBtn = document.getElementById('startAudioBtn');
+                this.stopAudioBtn = document.getElementById('stopAudioBtn');
+                this.audioStatus = document.getElementById('audioStatus');
+                this.microphoneStatus = document.getElementById('microphoneStatus');
+                this.volumeLevel = document.getElementById('volumeLevel');
+                this.volumeText = document.getElementById('volumeText');
+                
+                // Speaker elements
+                this.speakersCount = document.getElementById('speakersCount');
+                this.speakerGrid = document.getElementById('speakerGrid');
+                this.noSpeakersMessage = document.getElementById('noSpeakersMessage');
+                
+                // Log elements
+                this.logContainer = document.getElementById('logContainer');
+                this.clearLogBtn = document.getElementById('clearLogBtn');
+            }
+            
+            /**
+             * Bind event listeners to UI elements
+             */
+            bindEvents() {
+                // Connection events
+                this.connectBtn.addEventListener('click', () => this.toggleConnection());
+                this.getStatusBtn.addEventListener('click', () => this.requestStatus());
+                this.getStatsBtn.addEventListener('click', () => this.requestStatistics());
+                
+                // Audio events
+                this.startAudioBtn.addEventListener('click', () => this.startAudioRecording());
+                this.stopAudioBtn.addEventListener('click', () => this.stopAudioRecording());
+                
+                // Log events
+                this.clearLogBtn.addEventListener('click', () => this.clearLog());
+                
+                // Window events
+                window.addEventListener('beforeunload', () => this.cleanup());
+                window.addEventListener('online', () => this.handleNetworkOnline());
+                window.addEventListener('offline', () => this.handleNetworkOffline());
+            }
+            
+            /**
+             * Check if we should auto-connect to server
+             */
+            checkAutoConnect() {
+                // Only auto-connect if we're on localhost or file:// protocol
+                const isLocal = location.hostname === 'localhost' || 
+                               location.hostname === '127.0.0.1' || 
+                               location.protocol === 'file:';
+                
+                if (isLocal) {
+                    this.log('Attempting auto-connect to local server...', 'info');
+                    this.connect();
+                }
+            }
+            
+            /**
+             * Toggle connection state
+             */
+            toggleConnection() {
+                if (this.isConnected) {
+                    this.disconnect();
+                } else {
+                    this.connect();
+                }
+            }
+            
+            /**
+             * Connect to WebSocket server
+             */
+            async connect() {
+                if (this.isConnected) {
+                    return;
+                }
+                
+                try {
+                    this.log(`Connecting to ${this.serverUrl}...`, 'info');
+                    this.updateConnectionStatus('Connecting...', 'connecting');
+                    
+                    // Create WebSocket connection
+                    this.ws = new WebSocket(this.serverUrl);
+                    
+                    // Set up event handlers
+                    this.ws.onopen = (event) => this.handleConnectionOpen(event);
+                    this.ws.onmessage = (event) => this.handleMessage(event);
+                    this.ws.onclose = (event) => this.handleConnectionClose(event);
+                    this.ws.onerror = (error) => this.handleConnectionError(error);
+                    
+                } catch (error) {
+                    this.log(`Connection failed: ${error.message}`, 'error');
+                    this.updateConnectionStatus('Connection Failed', 'disconnected');
+                }
+            }
+            
+            /**
+             * Disconnect from server
+             */
+            disconnect() {
+                if (this.ws) {
+                    this.log('Disconnecting from server...', 'info');
+                    this.stopAudioRecording();
+                    this.ws.close(1000, 'Client disconnecting');
+                }
+            }
+            
+            /**
+             * Handle successful connection
+             */
+            handleConnectionOpen(event) {
+                this.isConnected = true;
+                this.reconnectAttempts = 0;
+                
+                this.log('Connected to server successfully!', 'success');
+                this.updateConnectionStatus('Connected', 'connected');
+                this.updateUI();
+                
+                // Start heartbeat
+                this.startHeartbeat();
+                
+                // Request initial status
+                setTimeout(() => this.requestStatus(), 500);
+            }
+            
+            /**
+             * Handle incoming WebSocket messages
+             */
+            handleMessage(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    
+                    switch (data.type) {
+                        case 'welcome':
+                            this.handleWelcomeMessage(data);
+                            break;
+                        case 'status_update':
+                            this.handleStatusUpdate(data);
+                            break;
+                        case 'statistics':
+                            this.handleStatistics(data);
+                            break;
+                        case 'pong':
+                            this.log('Heartbeat response received', 'info');
+                            break;
+                        case 'error':
+                            this.log(`Server error: ${data.message}`, 'error');
+                            break;
+                        default:
+                            this.log(`Unknown message type: ${data.type}`, 'warning');
+                    }
+                    
+                } catch (error) {
+                    this.log(`Error parsing server message: ${error.message}`, 'error');
+                }
+            }
+            
+            /**
+             * Handle connection close
+             */
+            handleConnectionClose(event) {
+                this.isConnected = false;
+                this.clientId = null;
+                
+                this.stopHeartbeat();
+                this.stopAudioRecording();
+                this.updateConnectionStatus('Disconnected', 'disconnected');
+                this.updateUI();
+                this.clearSpeakers();
+                
+                if (event.code === 1000) {
+                    this.log('Disconnected from server', 'info');
+                } else {
+                    this.log(`Connection closed unexpectedly (${event.code}: ${event.reason})`, 'warning');
+                    this.attemptReconnect();
+                }
+            }
+            
+            /**
+             * Handle connection errors
+             */
+            handleConnectionError(error) {
+                this.log(`WebSocket error: ${error.message || 'Connection failed'}`, 'error');
+                this.updateConnectionStatus('Error', 'disconnected');
+            }
+            
+            /**
+             * Handle welcome message from server
+             */
+            handleWelcomeMessage(data) {
+                this.clientId = data.client_id;
+                this.log(`Assigned client ID: ${this.clientId}`, 'success');
+                
+                // Update server info display
+                const serverInfo = data.server_info;
+                const infoText = `VAD: ${serverInfo.vad_available ? '✅' : '❌'} | SR: ${serverInfo.sr_available ? '✅' : '❌'}`;
+                this.serverInfo.querySelector('.status-value').textContent = infoText;
+            }
+            
+            /**
+             * Handle status updates from server
+             */
+            handleStatusUpdate(data) {
+                const { closest_speaker, speakers, server_info } = data;
+                
+                // Update speakers display
+                this.updateSpeakersDisplay(speakers, closest_speaker);
+                
+                // Update counts
+                const activeCount = speakers ? speakers.length : 0;
+                this.speakersCount.textContent = `${activeCount} speaker${activeCount !== 1 ? 's' : ''}`;
+                
+                // Log significant events
+                if (closest_speaker) {
+                    const speaker = speakers.find(s => s.id === closest_speaker);
+                    if (speaker && speaker.last_transcription) {
+                        this.log(`Transcription from ${speaker.id}: "${speaker.last_transcription}"`, 'success');
+                    }
+                }
+            }
+            
+            /**
+             * Handle statistics from server
+             */
+            handleStatistics(data) {
+                const stats = data.statistics;
+                this.log(`Server Statistics - Speakers: ${stats.total_speakers}, Chunks: ${stats.total_processed_chunks}, Uptime: ${Math.round(stats.uptime_seconds)}s`, 'info');
+            }
+            
+            /**
+             * Update speakers display
+             */
+            updateSpeakersDisplay(speakers, closestSpeakerId) {
+                // Clear existing display
+                this.speakerGrid.innerHTML = '';
+                this.speakers.clear();
+                
+                if (!speakers || speakers.length === 0) {
+                    this.speakerGrid.appendChild(this.noSpeakersMessage);
+                    return;
+                }
+                
+                // Create speaker cards
+                speakers.forEach(speaker => {
+                    this.speakers.set(speaker.id, speaker);
+                    const card = this.createSpeakerCard(speaker, closestSpeakerId);
+                    this.speakerGrid.appendChild(card);
+                });
+            }
+            
+            /**
+             * Create speaker card element
+             */
+            createSpeakerCard(speaker, closestSpeakerId) {
+                const isClosest = speaker.id === closestSpeakerId;
+                const intensityPercent = Math.max(0, Math.min(100, (speaker.intensity_db + 60) * 100 / 60));
+                
+                const card = document.createElement('div');
+                card.className = `speaker-card ${isClosest ? 'closest' : ''} ${speaker.is_speaking ? 'speaking' : ''}`;
+                
+                // Calculate connection duration
+                const connectedTime = new Date(speaker.connection_time);
+                const duration = Math.round((new Date() - connectedTime) / 1000);
+                
+                card.innerHTML = `
+                    <div class="speaker-header">
+                        <div class="speaker-id">${speaker.id}</div>
+                        <div class="speaker-badges">
+                            ${isClosest ? '<span class="badge closest">🎯 CLOSEST</span>' : ''}
+                            ${speaker.is_speaking ? '<span class="badge speaking">🗣️ SPEAKING</span>' : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="speaker-stats">
+                        <div class="stat">
+                            <div class="stat-label">Rank</div>
+                            <div class="stat-value">#${speaker.rank}</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-label">Speech Time</div>
+                            <div class="stat-value">${speaker.total_speech_time}s</div>
+                        </div>
+                    </div>
+                    
+                    <div class="intensity-bar">
+                        <div class="intensity-fill" style="width: ${intensityPercent}%"></div>
+                        <div class="intensity-text">${speaker.intensity_db} dB</div>
+                    </div>
+                    
+                    <div class="transcription ${speaker.last_transcription ? '' : 'empty'}">
+                        ${speaker.last_transcription || 'No transcription yet...'}
+                    </div>
+                    
+                    <div class="text-small text-center" style="margin-top: 10px; opacity: 0.7;">
+                        Connected ${duration}s ago
+                    </div>
+                `;
+                
+                return card;
+            }
+            
+            /**
+             * Start audio recording
+             */
+            async startAudioRecording() {
+                try {
+                    this.log('Requesting microphone access...', 'info');
+                    this.updateAudioStatus('Requesting Access...', 'requesting');
+                    
+                    // Request microphone access
+                    this.mediaStream = await navigator.mediaDevices.getUserMedia({
+                        audio: {
+                            sampleRate: 16000,
+                            channelCount: 1,
+                            echoCancellation: true,
+                            noiseSuppression: true,
+                            autoGainControl: true
+                        }
+                    });
+                    
+                    // Create audio context
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)({
+                        sampleRate: 16000
+                    });
+                    
+                    // Resume audio context if suspended
+                    if (this.audioContext.state === 'suspended') {
+                        await this.audioContext.resume();
+                    }
+                    
+                    // Create audio processing chain
+                    this.microphone = this.audioContext.createMediaStreamSource(this.mediaStream);
+                    this.processor = this.audioContext.createScriptProcessor(this.audioChunkSize, 1, 1);
+                    
+                    // Set up audio processing
+                    this.processor.onaudioprocess = (event) => this.processAudioChunk(event);
+                    
+                    // Connect audio nodes
+                    this.microphone.connect(this.processor);
+                    this.processor.connect(this.audioContext.destination);
+                    
+                    // Update state
+                    this.isRecording = true;
+                    this.updateAudioStatus('Recording', 'recording');
+                    this.updateMicrophoneStatus('Active', 'active');
+                    this.updateUI();
+                    
+                    this.log('Audio recording started successfully', 'success');
+                    
+                } catch (error) {
+                    this.log(`Audio recording failed: ${error.message}`, 'error');
+                    this.updateAudioStatus('Failed', 'error');
+                    this.updateMicrophoneStatus('Access Denied', 'error');
+                }
+            }
+            
+            /**
+             * Stop audio recording
+             */
+            stopAudioRecording() {
+                this.isRecording = false;
+                
+                // Disconnect and clean up audio nodes
+                if (this.processor) {
+                    this.processor.disconnect();
+                    this.processor = null;
+                }
+                
+                if (this.microphone) {
+                    this.microphone.disconnect();
+                    this.microphone = null;
+                }
+                
+                if (this.audioContext) {
+                    this.audioContext.close();
+                    this.audioContext = null;
+                }
+                
+                // Stop media stream
+                if (this.mediaStream) {
+                    this.mediaStream.getTracks().forEach(track => track.stop());
+                    this.mediaStream = null;
+                }
+                
+                // Reset UI
+                this.volumeLevel.style.width = '0%';
+                this.volumeText.textContent = '0 dB';
+                this.updateAudioStatus('Inactive', 'inactive');
+                this.updateMicrophoneStatus('Not Accessed', 'inactive');
+                this.updateUI();
+                
+                this.log('Audio recording stopped', 'info');
+            }
+            
+            /**
+             * Process audio chunks and send to server
+             */
+            processAudioChunk(event) {
+                if (!this.isRecording || !this.isConnected || !this.ws) {
+                    return;
+                }
+                
+                const inputData = event.inputBuffer.getChannelData(0);
+                
+                // Update volume meter (throttled)
+                const now = Date.now();
+                if (now - this.lastVolumeUpdate > 100) { // Update every 100ms
+                    this.updateVolumeMeter(inputData);
+                    this.lastVolumeUpdate = now;
+                }
+                
+                // Convert to 16-bit PCM
+                const pcmData = new Int16Array(inputData.length);
+                for (let i = 0; i < inputData.length; i++) {
+                    // Convert from [-1, 1] to [-32768, 32767]
+                    const sample = Math.max(-1, Math.min(1, inputData[i]));
+                    pcmData[i] = sample * (sample < 0 ? 32768 : 32767);
+                }
+                
+                // Send to server
+                try {
+                    if (this.ws.readyState === WebSocket.OPEN) {
+                        this.ws.send(pcmData.buffer);
+                    }
+                } catch (error) {
+                    this.log(`Error sending audio data: ${error.message}`, 'error');
+                }
+            }
+            
+            /**
+             * Update volume meter display
+             */
+            updateVolumeMeter(audioData) {
+                // Calculate RMS
+                let sum = 0;
+                for (let i = 0; i < audioData.length; i++) {
+                    sum += audioData[i] * audioData[i];
+                }
+                const rms = Math.sqrt(sum / audioData.length);
+                
+                // Convert to dB
+                const db = rms > 0 ? 20 * Math.log10(rms) : -60;
+                const clampedDb = Math.max(-60, Math.min(0, db));
+                
+                // Update display
+                const volumePercent = Math.max(0, (clampedDb + 60) * 100 / 60);
+                this.volumeLevel.style.width = `${volumePercent}%`;
+                this.volumeText.textContent = `${Math.round(clampedDb)} dB`;
+            }
+            
+            /**
+             * Request status from server
+             */
+            requestStatus() {
+                if (this.isConnected && this.ws) {
+                    this.ws.send(JSON.stringify({ type: 'get_status' }));
+                    this.log('Status update requested', 'info');
+                }
+            }
+            
+            /**
+             * Request statistics from server
+             */
+            requestStatistics() {
+                if (this.isConnected && this.ws) {
+                    this.ws.send(JSON.stringify({ type: 'get_statistics' }));
+                    this.log('Statistics requested', 'info');
+                }
+            }
+            
+            /**
+             * Start heartbeat to keep connection alive
+             */
+            startHeartbeat() {
+                this.heartbeatInterval = setInterval(() => {
+                    if (this.isConnected && this.ws && this.ws.readyState === WebSocket.OPEN) {
+                        this.ws.send(JSON.stringify({ 
+                            type: 'ping', 
+                            timestamp: Date.now() 
+                        }));
+                    }
+                }, 30000); // Ping every 30 seconds
+            }
+            
+            /**
+             * Stop heartbeat
+             */
+            stopHeartbeat() {
+                if (this.heartbeatInterval) {
+                    clearInterval(this.heartbeatInterval);
+                    this.heartbeatInterval = null;
+                }
+            }
+            
+            /**
+             * Attempt to reconnect after connection loss
+             */
+            attemptReconnect() {
+                if (this.reconnectAttempts < this.maxReconnectAttempts) {
+                    this.reconnectAttempts++;
+                    const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
+                    
+                    this.log(`Attempting reconnection ${this.reconnectAttempts}/${this.maxReconnectAttempts} in ${delay/1000}s...`, 'warning');
+                    
+                    setTimeout(() => {
+                        if (!this.isConnected) {
+                            this.connect();
+                        }
+                    }, delay);
+                } else {
+                    this.log('Maximum reconnection attempts reached', 'error');
+                }
+            }
+            
+            /**
+             * Handle network coming online
+             */
+            handleNetworkOnline() {
+                this.log('Network connection restored', 'success');
+                if (!this.isConnected) {
+                    setTimeout(() => this.connect(), 1000);
+                }
+            }
+            
+            /**
+             * Handle network going offline
+             */
+            handleNetworkOffline() {
+                this.log('Network connection lost', 'warning');
+            }
+            
+            /**
+             * Update connection status display
+             */
+            updateConnectionStatus(status, type) {
+                this.connectionStatus.querySelector('.status-value').textContent = status;
+                this.connectionStatus.className = `status-item ${type}`;
+            }
+            
+            /**
+             * Update audio status display
+             */
+            updateAudioStatus(status, type) {
+                this.audioStatus.querySelector('.status-value').textContent = status;
+                this.audioStatus.className = `status-item ${type}`;
+            }
+            
+            /**
+             * Update microphone status display
+             */
+            updateMicrophoneStatus(status, type) {
+                this.microphoneStatus.querySelector('.status-value').textContent = status;
+                this.microphoneStatus.className = `status-item ${type}`;
+            }
+            
+            /**
+             * Update UI button states
+             */
+            updateUI() {
+                // Connection buttons
+                this.connectBtn.textContent = this.isConnected ? 'Disconnect' : 'Connect Server';
+                this.connectBtn.className = this.isConnected ? 'danger' : 'primary';
+                this.getStatusBtn.disabled = !this.isConnected;
+                this.getStatsBtn.disabled = !this.isConnected;
+                
+                // Audio buttons
+                this.startAudioBtn.disabled = !this.isConnected || this.isRecording;
+                this.stopAudioBtn.disabled = !this.isRecording;
+            }
+            
+            /**
+             * Clear speakers display
+             */
+            clearSpeakers() {
+                this.speakers.clear();
+                this.speakerGrid.innerHTML = '';
+                this.speakerGrid.appendChild(this.noSpeakersMessage);
+                this.speakersCount.textContent = '0 speakers';
+            }
+            
+            /**
+             * Add log entry
+             */
+            log(message, type = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const entry = document.createElement('div');
+                entry.className = `log-entry ${type}`;
+                entry.textContent = `[${timestamp}] ${message}`;
+                
+                this.logContainer.appendChild(entry);
+                this.logContainer.scrollTop = this.logContainer.scrollHeight;
+                
+                // Limit log entries to prevent memory issues
+                const entries = this.logContainer.children;
+                if (entries.length > 100) {
+                    this.logContainer.removeChild(entries[0]);
+                }
+                
+                // Also log to console for debugging
+                console.log(`[SpeakerClient] ${message}`);
+            }
+            
+            /**
+             * Clear log
+             */
+            clearLog() {
+                this.logContainer.innerHTML = '';
+                this.log('Log cleared', 'info');
+            }
+            
+            /**
+             * Clean up resources
+             */
+            cleanup() {
+                this.log('Cleaning up client resources...', 'info');
+                this.stopHeartbeat();
+                this.stopAudioRecording();
+                if (this.ws) {
+                    this.ws.close();
+                }
+            }
+        }
+        
+        /**
+         * Initialize the application when DOM is ready
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check for required browser APIs
+            if (!window.WebSocket) {
+                alert('WebSocket is not supported in this browser!');
+                return;
+            }
+            
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert('MediaDevices API is not supported in this browser!');
+                return;
+            }
+            
+            // Create and start the client
+            try {
+                window.speakerClient = new SpeakerDetectionClient();
+                console.log('Speaker Detection Client initialized successfully');
+            } catch (error) {
+                console.error('Failed to initialize client:', error);
+                alert(`Failed to initialize client: ${error.message}`);
+            }
+        });
+        
+        // Global error handler
+        window.addEventListener('error', (event) => {
+            console.error('Global error:', event.error);
+            if (window.speakerClient) {
+                window.speakerClient.log(`Global error: ${event.error.message}`, 'error');
+            }
+        });
+        
+        // Unhandled promise rejection handler
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('Unhandled promise rejection:', event.reason);
+            if (window.speakerClient) {
+                window.speakerClient.log(`Promise rejection: ${event.reason}`, 'error');
+            }
+        });
+    </script>
+</body>
+</html>

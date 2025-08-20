@@ -1,0 +1,22 @@
+# Core Dependencies
+asyncio
+websockets==11.0.3
+numpy==1.24.3
+scipy==1.10.1
+
+# Audio Processing
+webrtcvad==2.0.10
+SpeechRecognition==3.10.0
+pyaudio==0.2.11
+
+# Optional: Additional audio libraries
+soundfile==0.12.1
+librosa==0.10.1
+
+# Web server (optional for serving HTML)
+fastapi==0.104.1
+uvicorn==0.24.0
+
+# Utilities
+python-dateutil==2.8.2
+requests==2.31.0

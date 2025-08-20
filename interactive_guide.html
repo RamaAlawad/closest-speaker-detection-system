@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Closest Speaker Detection System - Interactive Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #F8F7F4;
+            color: #333;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The application is structured into thematic sections to guide the user logically through the project. It starts with a high-level overview, then dives into the features with an interactive diagram. A "Get Started" section with tabs for installation and usage provides a clear call to action. This structure is chosen for its user-friendly flow, making the information more digestible and engaging than a linear document. -->
+    <!-- Visualization & Content Choices: 
+        - Project Features -> Goal: Inform -> Viz/Presentation Method: Interactive Diagram (HTML/CSS/JS) -> Interaction: Hover to highlight feature descriptions -> Justification: Visually represents the system's components and their functions, making it easier to understand the architecture. Library/Method: Vanilla JS and Tailwind CSS.
+        - Installation & Usage -> Goal: Organize -> Viz/Presentation Method: Tabbed Interface -> Interaction: Click tabs to switch between installation and usage instructions -> Justification: Separates distinct steps into clear, manageable chunks, improving readability and user experience. Library/Method: Vanilla JS.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="font-sans antialiased">
+
+    <div class="container mx-auto p-4 sm:p-6 md:p-8">
+        <header class="text-center my-8">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800">🎤 Closest Speaker Detection System</h1>
+            <p class="mt-4 text-lg text-gray-600">An interactive guide to understanding and using the system.</p>
+        </header>
+
+        <main>
+            <section id="overview" class="my-12">
+                <div class="bg-white p-8 rounded-lg shadow-md">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Project Overview</h2>
+                    <p class="text-gray-700 leading-relaxed">This project is a complete system for detecting the closest speaker to a microphone by analyzing audio intensity and voice activity from multiple audio sources. It consists of a Python-based WebSocket server and a web-based client interface, working together to provide real-time speaker analysis.</p>
+                </div>
+            </section>
+
+            <section id="features" class="my-12">
+                <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">How It Works</h2>
+                <div class="bg-white p-8 rounded-lg shadow-md">
+                    <div class="flex flex-col md:flex-row gap-8">
+                        <div class="md:w-1/2">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">Core Features</h3>
+                            <ul class="space-y-4">
+                                <li id="feature-1" class="p-4 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors duration-300">
+                                    <h4 class="font-bold text-gray-700">Real-time Audio Processing</h4>
+                                    <p class="text-gray-600">Handles audio streams from multiple clients concurrently.</p>
+                                </li>
+                                <li id="feature-2" class="p-4 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors duration-300">
+                                    <h4 class="font-bold text-gray-700">Voice Activity Detection (VAD)</h4>
+                                    <p class="text-gray-600">Uses WebRTC VAD for efficient voice detection.</p>
+                                </li>
+                                <li id="feature-3" class="p-4 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors duration-300">
+                                    <h4 class="font-bold text-gray-700">Audio Intensity Measurement</h4>
+                                    <p class="text-gray-600">Ranks speakers by proximity using decibel levels.</p>
+                                </li>
+                                 <li id="feature-4" class="p-4 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors duration-300">
+                                    <h4 class="font-bold text-gray-700">Speech Transcription</h4>
+                                    <p class="text-gray-600">Integrates with the Google Speech API to transcribe speech.</p>
+                                </li>
+                                <li id="feature-5" class="p-4 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors duration-300">
+                                    <h4 class="font-bold text-gray-700">WebSocket Communication</h4>
+                                    <p class="text-gray-600">Enables real-time, low-latency communication.</p>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="md:w-1/2 flex items-center justify-center">
+                            <div class="w-full h-64 bg-gray-100 rounded-lg p-4 flex flex-col items-center justify-center text-center" id="diagram-container">
+                                <div id="diagram-client" class="p-4 bg-blue-200 rounded-lg mb-4 transition-all duration-300">Client (index.html)</div>
+                                <div class="w-full h-1 bg-gray-300 mb-4"></div>
+                                <div id="diagram-server" class="p-4 bg-green-200 rounded-lg transition-all duration-300">Server (main.py)</div>
+                                <p class="mt-4 text-gray-600">Hover over features to see the components interact.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="get-started" class="my-12">
+                <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">Get Started</h2>
+                <div class="bg-white rounded-lg shadow-md">
+                    <div class="border-b border-gray-200">
+                        <nav class="flex -mb-px" aria-label="Tabs">
+                            <button class="tab-btn w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="installation">
+                                Installation
+                            </button>
+                            <button class="tab-btn w-1/2 py-4 px-1 text-center border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="usage">
+                                Usage
+                            </button>
+                        </nav>
+                    </div>
+                    <div id="installation" class="tab-content p-8">
+                        <p class="text-gray-700 mb-4">You will need **Python 3.x** installed on your system.</p>
+                        <ol class="list-decimal list-inside space-y-4">
+                            <li>
+                                <p class="text-gray-700">Clone the repository from GitHub:</p>
+                                <pre class="bg-gray-100 p-4 rounded-md mt-2 text-sm"><code>git clone https://github.com/your-username/your-repo-name.git
+cd your-repo-name</code></pre>
+                            </li>
+                            <li>
+                                <p class="text-gray-700">Install dependencies using `pip`:</p>
+                                <pre class="bg-gray-100 p-4 rounded-md mt-2 text-sm"><code>pip install -r requirements.txt</code></pre>
+                            </li>
+                        </ol>
+                    </div>
+                    <div id="usage" class="tab-content hidden p-8">
+                        <ol class="list-decimal list-inside space-y-4">
+                            <li>
+                                <p class="text-gray-700">Start the server:</p>
+                                <pre class="bg-gray-100 p-4 rounded-md mt-2 text-sm"><code>python main.py</code></pre>
+                                <p class="text-gray-600 text-sm mt-2">The server will start on `localhost` at port `8765`.</p>
+                            </li>
+                            <li>
+                                <p class="text-gray-700">Open the client interface:</p>
+                                <p class="text-gray-600 text-sm mt-2">Open the `index.html` file in your web browser. You can do this by simply double-clicking the file or by serving it via a local web server (e.g., `python -m http.server`).</p>
+                            </li>
+                            <li>
+                                <p class="text-gray-700">Connect and Record:</p>
+                                <ul class="list-disc list-inside ml-4 mt-2 text-gray-600 text-sm">
+                                    <li>In the web interface, click the **"Connect Server"** button. Your browser will prompt you to grant microphone permissions.</li>
+                                    <li>Once connected, click **"Start Recording"** to begin the audio processing.</li>
+                                </ul>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="text-center py-8 mt-12 border-t border-gray-200">
+            <p class="text-gray-600">This project is open source and available under the MIT License.</p>
+            <p class="text-gray-600 mt-2">Contributions are welcome! Please feel free to open issues or submit pull requests.</p>
+        </footer>
+    </div>
+
+    <script>
+        const tabs = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const target = document.getElementById(tab.dataset.tab);
+
+                tabs.forEach(t => t.classList.remove('border-indigo-500', 'text-indigo-600'));
+                tab.classList.add('border-indigo-500', 'text-indigo-600');
+
+                tabContents.forEach(content => content.classList.add('hidden'));
+                target.classList.remove('hidden');
+            });
+        });
+
+        const features = document.querySelectorAll('[id^="feature-"]');
+        const diagramClient = document.getElementById('diagram-client');
+        const diagramServer = document.getElementById('diagram-server');
+
+        features.forEach(feature => {
+            feature.addEventListener('mouseenter', () => {
+                if (feature.id === 'feature-5') {
+                    diagramClient.style.transform = 'scale(1.1)';
+                    diagramServer.style.transform = 'scale(1.1)';
+                } else {
+                    diagramServer.style.transform = 'scale(1.1)';
+                }
+            });
+
+            feature.addEventListener('mouseleave', () => {
+                diagramClient.style.transform = 'scale(1)';
+                diagramServer.style.transform = 'scale(1)';
+            });
+        });
+        
+        tabs[0].click();
+    </script>
+</body>
+</html>
