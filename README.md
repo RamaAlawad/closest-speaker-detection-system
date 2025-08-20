@@ -1,32 +1,52 @@
-  # ***🎤 Closest Speaker Detection System*** #
-This project is a complete system for detecting the closest speaker to a microphone by analyzing audio intensity and voice activity from multiple audio sources. It consists of a Python-based WebSocket server and a a web-based client interface.
+# 🎤 Closest Speaker Detection System
 
-🚀 Features
-Real-time Audio Processing: The system handles real-time audio streams from multiple clients concurrently.
+![Python](https://img.shields.io/badge/Python-3.x-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
+![GitHub Pages](https://img.shields.io/badge/GitHub-Pages-orange)
 
-Voice Activity Detection (VAD): It uses the WebRTC VAD library for efficient voice detection, with a simple volume-based fallback if the library is not available.
+A complete system for detecting the closest speaker to a microphone by analyzing audio intensity and voice activity from multiple audio sources. It consists of a Python-based WebSocket server and a web-based client interface.
 
-Audio Intensity Measurement: It measures audio intensity in decibels to accurately rank speakers by their proximity to the microphone.
+---
 
-Speech Transcription: It integrates with the Google Speech API to transcribe spoken words into text.
+## 📌 Table of Contents
 
-WebSocket Communication: A WebSocket server is used for real-time, low-latency communication between the clients and the backend.
+- [Features](#-features)
+- [Installation](#-installation)
+- [Usage](#-usage)
+- [File Descriptions](#-file-descriptions)
+- [License](#-license)
+- [Contributing](#-contributing)
+- [Live Demo](#-live-demo)
 
-Responsive Web Interface: A modern and responsive web interface is provided for easy interaction and visualization of the results.
+---
 
-🛠️ Installation
-You will need Python 3.x installed on your system.
+## 🚀 Features
 
-Clone the repository from GitHub:
+- **Real-time Audio Processing:** Handles audio streams from multiple clients concurrently.  
+- **Voice Activity Detection (VAD):** Uses the WebRTC VAD library, with a volume-based fallback.  
+- **Audio Intensity Measurement:** Measures audio intensity in decibels to rank speakers by proximity.  
+- **Speech Transcription:** Integrates with Google Speech API to convert speech to text.  
+- **WebSocket Communication:** Low-latency, real-time communication between backend and clients.  
+- **Responsive Web Interface:** Modern UI for interaction and visualization of results.  
 
+---
+
+## 🛠️ Installation
+
+1. **Prerequisites:**  
+   - Python 3.x installed on your system
+
+2. **Clone the repository:**
+```bash
 git clone https://github.com/your-username/your-repo-name.git
 cd your-repo-name
+```
 
-Install dependencies using pip:
-
+3. Install dependencies using pip:
+```
 pip install -r requirements.txt
-
-▶️ Usage
+```
+## ▶️ Usage
 Start the server:
 
 python main.py
